@@ -1,2 +1,4 @@
-*.json
+Lyrics_ForAllTheDogsScaryHoursEdition.json
 venv/
+.mypy_cache/
+.env.prod
