@@ -20,18 +20,20 @@ def obj_to_dict(obj):
 client = create_opneaiclient()
 
 # ----------------- Ad-hoc processing -----------------
-# state = client.fine_tuning.jobs.retrieve("ftjob-S7U3XXqtWCE8OnsKndJIlmZu")
+# id = "ftjob-KgpcRw4JolOFAn2OuRJxOSy0"
+# ----------------- Ad-hoc processing -----------------
+# state = client.fine_tuning.jobs.retrieve(id)
 # num_lines_in_train = 466
 # json_dict = obj_to_dict(state)
 # json_dict['num_lines_in_train'] = num_lines_in_train
-# with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/models/model_ftjob-S7U3XXqtWCE8OnsKndJIlmZu.json", "w") as info_file:
+# with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/models/model_{id}.json", "w") as info_file:
 #     info_file.write(json.dumps(json_dict, indent=4))
 # sys.exit()
 # ----------------- Ad-hoc processing -----------------
-# state = client.fine_tuning.jobs.retrieve("ftjob-0vw5EgJfAW55v68iqXMsNpSA")
+# state = client.fine_tuning.jobs.retrieve(id)
 # for idx, result_file in enumerate(state.result_files):
 #     content = client.files.content(result_file)
-#     with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/model_result_files/model_ftjob-0vw5EgJfAW55v68iqXMsNpSA_{idx}.csv", "w") as info_file:
+#     with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/model_result_files/model_{id}_{idx}.csv", "w") as info_file:
 #         info_file.write(content.content.decode())
 # sys.exit()
 # ----------------- Ad-hoc processing -----------------
@@ -76,6 +78,7 @@ async def main():
     # Rate limit of 3 requests at once
     # batch1 = ["train_0.85.jsonl", "train_0.2.jsol", "train_0.4.jsonl"]
     # batch1_5 = ["train_0.3.jsonl"]
+    # TODO finsh off these other batches
     batch2 = ["train_0.01.jsonl", "train_1.jsonl"]
     batch3 = ["train_0.7.jsonl", "train_0.05.jsol", "train_0.5.jsonl"]
     # batches = [files[i:i + BATCH_SIZE] for i in range(0, len(files), BATCH_SIZE)]
