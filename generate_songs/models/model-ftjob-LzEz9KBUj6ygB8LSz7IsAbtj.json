@@ -1,0 +1,11 @@
+{
+  "fine_tuned_model": "ft:gpt-3.5-turbo-0125:personal::9KbBj2TN",
+  "hyperparemeters": "unknown",
+  "trained_tokens": 248463,
+  "training_loss": 0.2588,
+  "full_validation_loss": 0.7911,
+  "created_at": "May 2, 2024, 7:49 PM",
+  "training_file": "train.jsonl",
+  "validation_file": "val.jsonl",
+  "num_lines_in_train": 533
+}
