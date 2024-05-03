@@ -4,5 +4,5 @@ from openai import AsyncOpenAI
 
 load_dotenv('../.env.prod/.env')
 
-def create_opneaiclient_async():
+def create_openaiclient_async():
     return AsyncOpenAI(api_key=os.getenv('OPENAI_API_KEY'))

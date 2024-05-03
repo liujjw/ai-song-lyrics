@@ -1,4 +1,4 @@
-from setup import create_opneaiclient
+from setup import create_openaiclient
 from datetime import datetime
 import time
 import json
@@ -17,10 +17,10 @@ def obj_to_dict(obj):
     else:
         return {attr: obj_to_dict(getattr(obj, attr)) for attr in vars(obj)}
 
-client = create_opneaiclient()
+client = create_openaiclient()
 
 # ----------------- Ad-hoc processing -----------------
-# id = "ftjob-KgpcRw4JolOFAn2OuRJxOSy0"
+# id = "ftjob-VtQBkq7ehxfZh3qCt3K1RZnz"
 # ----------------- Ad-hoc processing -----------------
 # state = client.fine_tuning.jobs.retrieve(id)
 # num_lines_in_train = 466
@@ -53,6 +53,9 @@ def wait_for_finetune_success(fine_tuning_job_id, num_lines_in_train):
     state = client.fine_tuning.jobs.retrieve(fine_tuning_job_id)
     print(f"model {fine_tuning_job_id} finetuning is at status:", state.status)
     while state.status != 'succeeded':
+        if state.status == 'failed':
+            print(f"model {fine_tuning_job_id} finetuning failed")
+            return
         time.sleep(SLEEP_TIME)
         state = client.fine_tuning.jobs.retrieve(fine_tuning_job_id)
     end = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -61,7 +64,6 @@ def wait_for_finetune_success(fine_tuning_job_id, num_lines_in_train):
     hyperparemeters = state.hyperparameters
     trained_tokens = state.trained_tokens
     print(f"model {fine_tuning_job_id} finetuning is at status: {state.status} \n fine_tuned_model: {fine_tuning_model_id} \n hyperparemeters: {hyperparemeters} \n trained_tokens: {trained_tokens} \n start: {start} \n end: {end}")
-
     json_dict = obj_to_dict(state)
     json_dict['num_lines_in_train'] = num_lines_in_train
     with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/models/model_{fine_tuning_job_id}.json", "w") as info_file:
@@ -69,18 +71,19 @@ def wait_for_finetune_success(fine_tuning_job_id, num_lines_in_train):
 
     for idx, result_file in enumerate(state.result_files):
         content = client.files.content(result_file)
-        with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/model_result_files/model_ftjob-0vw5EgJfAW55v68iqXMsNpSA_{idx}.csv", "w") as info_file:
+        with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/model_result_files/model_{fine_tuning_job_id}_{idx}.csv", "w") as info_file:
             info_file.write(content.content.decode())
 
 async def main():
     loop = asyncio.get_event_loop()
     futures = []
-    # Rate limit of 3 requests at once
+    # Rate limit of 3 requests at once really messes up my plans
     # batch1 = ["train_0.85.jsonl", "train_0.2.jsol", "train_0.4.jsonl"]
     # batch1_5 = ["train_0.3.jsonl"]
+    # batch1_5_5 = ["train_0.01.jsonl"]
     # TODO finsh off these other batches
-    batch2 = ["train_0.01.jsonl", "train_1.jsonl"]
-    batch3 = ["train_0.7.jsonl", "train_0.05.jsol", "train_0.5.jsonl"]
+    # batch2 = ["train_0.1.jsonl", "train_0.7.jsonl"]
+    batch3 = ["train_0.5.jsonl", "train_0.05.jsonl"]
     # batches = [files[i:i + BATCH_SIZE] for i in range(0, len(files), BATCH_SIZE)]
 
     async def batch_helper(batch):
@@ -120,7 +123,7 @@ async def main():
     # for batch in batches:
     #     await batch_helper(batch)
     # await batch_helper(batch1) [DONE]
-    await batch_helper(batch2) 
+    # await batch_helper(batch2) 
     await batch_helper(batch3) 
 
 asyncio.run(main())

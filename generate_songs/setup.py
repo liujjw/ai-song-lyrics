@@ -4,5 +4,5 @@ from openai import OpenAI
 
 load_dotenv('../.env.prod/.env')
 
-def create_opneaiclient():
+def create_openaiclient():
     return OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
