@@ -10,6 +10,10 @@ MIN_CHAR_LENGTH = 128
 SYSTEM_CONTENT = {"role": "system", "content": "You are a songwriter."}
 USER_CONTENT = {"role": "user", "content": "I want to write a Drake song."}
 ASSISTANT_CONTENT = {"role": "assistant", "content": "Ok, let's write a song part by part. First tell me about a part of the song using some phrases."}
+VERSE = {"role": "assistant", "content": "Ok, tell me a verse of the song using some phrases."}
+CHORUS = {"role": "assistant", "content": "Ok, tell me a chorus of the song using some phrases."}
+INTRO = {"role": "assistant", "content": "Ok, tell me about the intro of the song using some phrases."}
+OUTRO = {"role": "assistant", "content": "Ok, tell me about the outro of the song using some phrases."}
 
 RETRY_TIME = 512
 MAX_TRIES = 16
@@ -27,7 +31,7 @@ KEY_PHRASES = {
         "Life of a made man, drip shit on, another hit",
     ],
 
-    "random_verses": [random.sample(PHRASES, 3) for _ in range(128)],
+    "random_verses": [random.sample(PHRASES, 3) for _ in range(64)],
 }
 
 logging.getLogger('backoff').addHandler(logging.StreamHandler())
@@ -52,20 +56,65 @@ async def main():
             for idx, key_phrases in enumerate(value):
 
                 @backoff.on_exception(backoff.expo, Exception, max_time=RETRY_TIME, max_tries=MAX_TRIES)
-                @backoff.on_predicate(backoff.expo, lambda x: len(x.choices[0].message.content) < MIN_CHAR_LENGTH, max_tries=MAX_TRIES, max_time=RETRY_TIME)
+                @backoff.on_predicate(backoff.expo, lambda x: len(x[0]) < MIN_CHAR_LENGTH or len(x[1]) < MIN_CHAR_LENGTH, max_tries=MAX_TRIES, max_time=RETRY_TIME)
                 async def create_song(key_phrases, client, fine_tuned_model, lyrics_path, idx):
-                    completion = await client.chat.completions.create(
+                    intro = ""
+                    if random.random() < 0.2:
+                        intro = await client.chat.completions.create(
+                            model=fine_tuned_model,
+                            messages=[
+                                SYSTEM_CONTENT,
+                                USER_CONTENT,
+                                INTRO,
+                                {"role": "user", "content": key_phrases}
+                            ]
+                        )
+                        intro = intro.choices[0].message.content
+                    verse1 = await client.chat.completions.create(
                         model=fine_tuned_model,
                         messages=[
                             SYSTEM_CONTENT,
                             USER_CONTENT,
-                            ASSISTANT_CONTENT,
+                            VERSE,
                             {"role": "user", "content": key_phrases}
                         ]
                     )
+                    verse1 = verse1.choices[0].message.content
+                    chorus = await client.chat.completions.create(
+                        model=fine_tuned_model,
+                        messages=[
+                            SYSTEM_CONTENT,
+                            USER_CONTENT,
+                            CHORUS,
+                            {"role": "user", "content": key_phrases}
+                        ]
+                    )
+                    chorus = chorus.choices[0].message.content
+                    verse2 = await client.chat.completions.create(
+                        model=fine_tuned_model,
+                        messages=[
+                            SYSTEM_CONTENT,
+                            USER_CONTENT,
+                            VERSE,
+                            {"role": "user", "content": key_phrases}
+                        ]
+                    )
+                    verse2 = verse2.choices[0].message.content
+                    outro = ""
+                    if random.random() < 0.2:
+                        outro = await client.chat.completions.create(
+                            model=fine_tuned_model,
+                            messages=[
+                                SYSTEM_CONTENT,
+                                USER_CONTENT,
+                                OUTRO,
+                                {"role": "user", "content": key_phrases}
+                            ]
+                        )
+                        outro = outro.choices[0].message.content
                     with open(os.path.join(lyrics_path, f"song_{idx}.txt"), "w") as info_file:
-                        info_file.write(completion.choices[0].message.content)
-                    return completion
+                        info_file.write(f"{intro}\n{verse1}\n{chorus}\n{verse2}\n{outro}")
+                    return [verse1, verse2]
 
                 tasks.append(create_song(key_phrases, client, fine_tuned_model, lyrics_path, idx))
     res = await asyncio.gather(*tasks, return_exceptions=True)
