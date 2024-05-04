@@ -28,7 +28,6 @@ client = create_openaiclient()
 # json_dict['num_lines_in_train'] = num_lines_in_train
 # with open(f"/Users/jackieliu/Documents/CODE/cs4701-ai-prac/generate_songs/models/model_{id}.json", "w") as info_file:
 #     info_file.write(json.dumps(json_dict, indent=4))
-# sys.exit()
 # ----------------- Ad-hoc processing -----------------
 # state = client.fine_tuning.jobs.retrieve(id)
 # for idx, result_file in enumerate(state.result_files):
@@ -77,14 +76,17 @@ def wait_for_finetune_success(fine_tuning_job_id, num_lines_in_train):
 async def main():
     loop = asyncio.get_event_loop()
     futures = []
-    # Rate limit of 3 requests at once really messes up my plans
-    # batch1 = ["train_0.85.jsonl", "train_0.2.jsol", "train_0.4.jsonl"]
-    # batch1_5 = ["train_0.3.jsonl"]
-    # batch1_5_5 = ["train_0.01.jsonl"]
-    # TODO finsh off these other batches
-    # batch2 = ["train_0.1.jsonl", "train_0.7.jsonl"]
-    batch3 = ["train_0.5.jsonl", "train_0.05.jsonl"]
-    # batches = [files[i:i + BATCH_SIZE] for i in range(0, len(files), BATCH_SIZE)]
+    # Rate limit of 3 requests at once 
+
+    # batch1 = ["train_0.85.jsonl", "train_0.2.jsol", "train_0.4.jsonl"] done
+    # batch1_5 = ["train_0.3.jsonl"] done 
+    # batch1_5_5 = ["train_0.01.jsonl"] done
+    # batch2 = ["train_0.1.jsonl", "train_0.7.jsonl"] done
+    # batch3 = ["train_0.5.jsonl", "train_0.05.jsonl"] done
+    # Add batches as needed
+    
+    # automation
+    batches = [files[i:i + BATCH_SIZE] for i in range(0, len(files), BATCH_SIZE)]
 
     async def batch_helper(batch):
         for train_file_name in batch:
@@ -106,7 +108,6 @@ async def main():
             )
             val_file_id = res.id
 
-            # https://platform.openai.com/docs/api-reference/fine-tuning/create
             # TODO hyperparemeters tuning
             # TODO wandb integration for experiment tracking
             res = client.fine_tuning.jobs.create(
@@ -120,10 +121,12 @@ async def main():
         runtimes = await asyncio.gather(*futures, return_exceptions=True)
         print(runtimes)
 
-    # for batch in batches:
-    #     await batch_helper(batch)
+    # automation
+    for batch in batches:
+        await batch_helper(batch)
+
     # await batch_helper(batch1) [DONE]
     # await batch_helper(batch2) 
-    await batch_helper(batch3) 
+    # await batch_helper(batch3) 
 
 asyncio.run(main())
