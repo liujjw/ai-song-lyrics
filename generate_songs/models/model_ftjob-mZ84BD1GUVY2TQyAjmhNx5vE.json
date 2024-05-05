@@ -1,0 +1,28 @@
+{
+    "id": "ftjob-mZ84BD1GUVY2TQyAjmhNx5vE",
+    "created_at": 1714789624,
+    "error": {
+        "code": null,
+        "message": null,
+        "param": null
+    },
+    "fine_tuned_model": "ft:gpt-3.5-turbo-0125:personal::9L03txlv",
+    "finished_at": 1714792151,
+    "hyperparameters": {
+        "n_epochs": 3
+    },
+    "model": "gpt-3.5-turbo-0125",
+    "object": "fine_tuning.job",
+    "organization_id": "org-hHn7fy6s0rPK69ZSN60mV325",
+    "result_files": [
+        "file-f9lHekuVD32B4LvnBc0c2KoF"
+    ],
+    "seed": 42,
+    "status": "succeeded",
+    "trained_tokens": 150168,
+    "training_file": "file-84DG6eFbXMtTjDqj7VqznHXw",
+    "validation_file": "file-5ovwJtIxgA1iy4fWVB9x9yeX",
+    "estimated_finish": null,
+    "integrations": [],
+    "num_lines_in_train": 353
+}

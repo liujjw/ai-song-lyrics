@@ -40,7 +40,7 @@ client = create_openaiclient()
 SEED = 42
 
 directory = '../data/diff_train_sizes'
-files = os.listdir(directory)
+files = [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
 MAX_WORKERS = len(files)
 BATCH_SIZE = 3
 SLEEP_TIME = 15

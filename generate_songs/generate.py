@@ -6,6 +6,9 @@ import backoff
 import logging
 import random
 
+ADLIBS_COMBOS = 16
+RANDOM_VERSE_COMBOS = 32
+
 MIN_CHAR_LENGTH = 128
 SYSTEM_CONTENT = {"role": "system", "content": "You are a songwriter."}
 USER_CONTENT = {"role": "user", "content": "I want to write a Drake song."}
@@ -15,8 +18,8 @@ CHORUS = {"role": "assistant", "content": "Ok, tell me a chorus of the song usin
 INTRO = {"role": "assistant", "content": "Ok, tell me about the intro of the song using some phrases."}
 OUTRO = {"role": "assistant", "content": "Ok, tell me about the outro of the song using some phrases."}
 
-RETRY_TIME = 512
-MAX_TRIES = 16
+RETRY_TIME = 256
+MAX_TRIES = 8
 
 ISMS = ["the 6ix", "Young Money", "OVO", "Woes", "Carbone", "Swiss Soto and Josso's", "Fashion week", "I'm here for a good time not a long time", "Day ones", "Twitter fingers", "Started from the bottom", "Yolo", "Yuh", "Okay okay", "More life", "ting", "white wine", "rose"]
 
@@ -25,22 +28,22 @@ PHRASES = [
 ]
 
 KEY_PHRASES = {
-    "adlibs-and-isms": [random.sample(ISMS, 3) for _ in range(32)],
+    "adlibs-and-isms": list(map(lambda x: f"{x[0]}, {x[1]}, {x[2]}", [random.sample(ISMS, 3) for _ in range(ADLIBS_COMBOS)])),
 
     "custom_lines": [
         "Life of a made man, drip shit on, another hit",
     ],
 
-    "random_verses": [random.sample(PHRASES, 3) for _ in range(64)],
+    "random_verses": list(map(lambda x: f"{x[0]}, {x[1]}, {x[2]}", [random.sample(PHRASES, 3) for _ in range(ADLIBS_COMBOS)])),
 }
 
 logging.getLogger('backoff').addHandler(logging.StreamHandler())
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 async def main():
     client = create_openaiclient_async()
     directory = './models'
-    files = os.listdir(directory)
+    files = [name for name in os.listdir(directory) if os.path.isfile(os.path.join(directory, name))]
     tasks = []
     for model_file in files:
         model_path = os.path.join(directory, model_file)
@@ -50,12 +53,15 @@ async def main():
         fine_tuned_model = data.get('fine_tuned_model')
         # import pdb; pdb.set_trace()
         for key, value in KEY_PHRASES.items():
-            lyrics_path = f"./generated_undiff_lyrics/{fine_tuned_model}/{key}/"
+            lyrics_path = f"./generated_lyrics/{fine_tuned_model}/{key}/"
             if not os.path.exists(lyrics_path):
                 os.makedirs(lyrics_path)
             for idx, key_phrases in enumerate(value):
 
-                @backoff.on_exception(backoff.expo, Exception, max_time=RETRY_TIME, max_tries=MAX_TRIES)
+                def fatalcode(e):
+                    return 400 <= e.response.status_code < 500
+
+                @backoff.on_exception(backoff.expo, Exception, max_time=RETRY_TIME, max_tries=MAX_TRIES, giveup=fatalcode)
                 @backoff.on_predicate(backoff.expo, lambda x: len(x[0]) < MIN_CHAR_LENGTH or len(x[1]) < MIN_CHAR_LENGTH, max_tries=MAX_TRIES, max_time=RETRY_TIME)
                 async def create_song(key_phrases, client, fine_tuned_model, lyrics_path, idx):
                     intro = ""
