@@ -26,7 +26,7 @@ Existing lyric generation from chat models are too generic. We can specialize th
 1. Question, can we generate a plot of lyric quality as a function of number of songs? Can we plot loss as a function of the size of the dataset?
 2. At the low end of songs, we can simply manually prompt engineer without the hassle. However, on the other hand we don't want to over-use compute and other resources for diminishing returns. The max OpenAI finetuning API dataset size is 1GB, and across the org is 100GB.
 3. We saw clear qualitative improvements in progress report two with only about 50 examples to train on.
-4. TODO evaluate loss at each example size and plot it.
+4. DONE evaluate loss at each example size and plot it. See Plotly for charts, we uplodaded the csvs of the model results and plotted mean validation set accuracy as a function of training step, for different model sizes.
 5. If a dataset can be hand generated (~5 song examples only for about 25 training examples), we can highly tailor and customize exactly the type of lyrics we want generated. At the limit, just one song, split into parts, and duplicate the song. We can't do this manually due to copyright.
 
 # Qualitative assessment
