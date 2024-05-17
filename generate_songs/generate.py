@@ -6,8 +6,8 @@ import backoff
 import logging
 import random
 
-ADLIBS_COMBOS = 16
-RANDOM_VERSE_COMBOS = 32
+ADLIBS_COMBOS = 2
+RANDOM_VERSE_COMBOS = 4
 
 MIN_CHAR_LENGTH = 128
 SYSTEM_CONTENT = {"role": "system", "content": "You are a songwriter."}
@@ -75,7 +75,7 @@ async def main():
                                 {"role": "user", "content": key_phrases}
                             ]
                         )
-                        intro = intro.choices[0].message.content
+                        intro_content = intro.choices[0].message.content
                     verse1 = await client.chat.completions.create(
                         model=fine_tuned_model,
                         messages=[
@@ -85,7 +85,7 @@ async def main():
                             {"role": "user", "content": key_phrases}
                         ]
                     )
-                    verse1 = verse1.choices[0].message.content
+                    verse1_content = verse1.choices[0].message.content
                     chorus = await client.chat.completions.create(
                         model=fine_tuned_model,
                         messages=[
@@ -95,7 +95,7 @@ async def main():
                             {"role": "user", "content": key_phrases}
                         ]
                     )
-                    chorus = chorus.choices[0].message.content
+                    chorus_content = chorus.choices[0].message.content
                     verse2 = await client.chat.completions.create(
                         model=fine_tuned_model,
                         messages=[
@@ -105,7 +105,7 @@ async def main():
                             {"role": "user", "content": key_phrases}
                         ]
                     )
-                    verse2 = verse2.choices[0].message.content
+                    verse2_content = verse2.choices[0].message.content
                     outro = ""
                     if random.random() < 0.2:
                         outro = await client.chat.completions.create(
@@ -117,9 +117,10 @@ async def main():
                                 {"role": "user", "content": key_phrases}
                             ]
                         )
-                        outro = outro.choices[0].message.content
+                        outro_content = outro.choices[0].message.content
                     with open(os.path.join(lyrics_path, f"song_{idx}.txt"), "w") as info_file:
-                        info_file.write(f"{intro}\n{verse1}\n{chorus}\n{verse2}\n{outro}")
+                        # import pdb; pdb.set_trace()
+                        info_file.write(f"{intro_content}\n{verse1_content}\n{chorus_content}\n{verse2_content}\n{outro_content}")
                     return [verse1, verse2]
 
                 tasks.append(create_song(key_phrases, client, fine_tuned_model, lyrics_path, idx))
