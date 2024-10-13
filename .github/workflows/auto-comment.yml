@@ -1,0 +1,37 @@
+# name: Auto Comment on Pull Request
+
+# on:
+#   pull_request:
+#     types: [opened, reopened, synchronize]  # Trigger on PR opened, reopened, or when commits are pushed to the PR
+
+# jobs:
+#   auto-comment:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       - name: Checkout code
+#         uses: actions/checkout@v2
+
+#       - name: Generate comment
+#         id: comment
+#         run: |
+#           echo "This is an automated comment from the GitHub Action!" > comment.txt
+#           COMMENT=$(<comment.txt)
+#           echo "::set-output name=comment::$COMMENT"  # Set the comment as an output variable
+
+#       - name: Post comment
+#         uses: peter-evans/github-script@v6
+#         with:
+#           script: |
+#             const comment = '${{ steps.comment.outputs.comment }}';
+#             const { context } = require('@actions/github');
+#             const { owner, repo } = context.repo;
+#             const issue_number = context.issue.number;
+
+#             await github.issues.createComment({
+#               owner,
+#               repo,
+#               issue_number,
+#               body: comment,
+#             });
+
